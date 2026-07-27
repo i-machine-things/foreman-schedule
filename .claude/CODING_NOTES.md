@@ -104,7 +104,7 @@ This note was created based on issues encountered with PyInstaller executables r
 
 **Use `printf`, not `echo`, for output containing backslashes.** `echo`'s backslash-escape expansion is implementation-defined (ShellCheck SC2028); `printf` is unambiguous.
 
-**Don't strip quotes from env values with `tr -d`.** It corrupts embedded quotes (e.g. `Bob's Shop`); use `eval "printf '%s' $raw"` to unwrap single-quoted values written by a matching setter.
+**Don't strip quotes from env values with `tr -d` — and never `eval` to unwrap them.** Both corrupt or execute embedded content (e.g. `Bob's Shop`, or arbitrary shell code). Write values without shell-quoting in the first place, or unwrap with a non-evaluating parser instead.
 
 **Quote path variables inside generated crontab entries.** An unquoted `$INSTALL_DIR` breaks the cron line if the install path contains spaces.
 
@@ -146,7 +146,7 @@ This note was created based on issues encountered with PyInstaller executables r
 
 **Use strict `=== true` for boolean config flags, not `??`/truthiness.** `cfg.flag ?? false` or `if (!cfg.flag)` mishandle truthy strings (even `"false"`); only the literal boolean `true` should switch behavior.
 
-**Validate and clamp numeric config values pulled from JSON/query params.** `parseInt(...) || 300` lets `0` or negatives slip through; NaN-check, then `Math.max(min, Math.min(v, max))` before using as a timeout duration.
+**Validate and clamp numeric config values pulled from JSON/query params.** `parseInt(...) || 300` silently replaces `0`/`NaN` with 300 and lets truthy negatives through unchanged; NaN-check explicitly, then `Math.max(min, Math.min(v, max))` before using as a timeout duration.
 
 **Re-arm fallback/advance timers immediately after a config reload changes scroll settings.** Otherwise a stale timer window persists until the next scroll cycle completes.
 
